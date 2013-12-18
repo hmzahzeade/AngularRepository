@@ -1,0 +1,23 @@
+Pluralsight - 
+1) Angular fundamentals: 
+   http://pluralsight.com/training/courses/TableOfContents?courseName=angularjs-fundamentals
+
+2) Building Data-Centric SPAs with Breeze:
+   http://pluralsight.com/training/Courses/TableOfContents/building-single-page-applications-breeze
+
+NuGet Packages:
+1) Install-Package HotTowel.Angular
+2) Install-Package EntityFramework
+3) Install-Package EntityFramework.SqlServerCompact
+4) Install-Package breeze.WebApi
+5) Install-Package HotTowel.Angular.Breeze  
+(if error on 4: "Nuget External packages cannot depend on packages that target projects" - 
+update NuGet Package Manager - go to Tools->Extensions and Updates-> Updates)
+
+
+
+https://github.com/johnpapa/Pluralsight-CC-Angular-Breeze-Extra
+
+
+Angular Templates for Visual Studio 2012/2013:
+http://sidewaffle.com/
