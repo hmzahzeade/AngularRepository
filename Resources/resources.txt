@@ -30,3 +30,9 @@ http://arthur.gonigberg.com/2013/06/29/angularjs-role-based-auth/
 Official documentation
 http://www.asp.net/web-api/
 http://www.asp.net/web-api/overview/web-api-routing-and-actions/exception-handling
+
+
+//Breeze/Angular VS template from Microsoft
+http://www.asp.net/single-page-application/overview/templates/breezeangular-template
+//Template explanation from the Breeze perspective  (Breeze.js site)
+http://www.breezejs.com/ng-spa-template?utm_source=ms-spa
