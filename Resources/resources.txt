@@ -21,3 +21,12 @@ https://github.com/johnpapa/Pluralsight-CC-Angular-Breeze-Extra
 
 Angular Templates for Visual Studio 2012/2013:
 http://sidewaffle.com/
+
+
+AngularJS -- Quick Role-Based Authentication
+http://arthur.gonigberg.com/2013/06/29/angularjs-role-based-auth/
+
+
+Official documentation
+http://www.asp.net/web-api/
+http://www.asp.net/web-api/overview/web-api-routing-and-actions/exception-handling
