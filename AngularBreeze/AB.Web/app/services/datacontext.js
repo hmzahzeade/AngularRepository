@@ -3,10 +3,11 @@
 
     var serviceId = 'datacontext';
     angular.module('app').factory(serviceId,
-        ['common', 'entityManagerFactory', 'config', datacontext]);
+        ['common', 'entityManagerFactory', 'config', 'model', datacontext]);
 
-    function datacontext(common, emFactory, config) {
+    function datacontext(common, emFactory, config, model) {
         var EntityQuery = breeze.EntityQuery;
+        var entityNames = model.entityNames;
 
         var getLogFn = common.logger.getLogFn;
         var log = getLogFn(serviceId);
@@ -16,18 +17,16 @@
         var manager = emFactory.newManager();
         var primePromise;
         var $q = common.$q;
-        
-        var entityNames = {
-            attendee: 'Person',
-            person: 'Person',
-            speaker: 'Person',
-            session: 'Session',
-            room: 'Room',
-            track: 'Track',
-            timeSlot: 'TimeSlot'
+
+        var storeMeta = {
+            isLoaded: {
+                sessions: false,
+                attendees: false
+            }  
         };
 
         var service = {
+            getAttendees: getAttendees,
             getPeople: getPeople,
             getMessageCount: getMessageCount,
             getSessionPartials: getSessionPartials,
@@ -52,38 +51,80 @@
             return $q.when(people);
         }
 
-        function getSpeakerPartials() {
+        function getAttendees(forceRemote) {
+            var orderBy = 'firstName, lastName';
+            var attendees = [];
+
+            if (_areAttendeesLoaded() && !forceRemote) {
+                // get local data
+                attendees = _getAllLocal(entityNames.attendee, orderBy);
+                return $q.when(attendees);
+            }
+
+            return EntityQuery.from('Persons')
+                .select('id, firstName, lastName, imageSource')
+                .orderBy(orderBy)
+                .toType(entityNames.attendee)
+                .using(manager).execute()
+                .to$q(querySecceeded, _queryFailed);
+
+            function querySecceeded(data) {
+                attendees = data.results;
+                _areAttendeesLoaded(true);
+                log('Retrieved [Attendees] from remote data source', attendees.length, true);
+                return attendees;
+            }
+        }
+
+        function getSpeakerPartials(forceRemote) {
+            var predicate = breeze.Predicate.create('isSpeaker', '==', true);
             var speakerOrderBy = 'firstName, lastName';
             var speakers = [];
+
+            if (!forceRemote) {
+                // get local data
+                speakers = _getAllLocal(entityNames.speaker, speakerOrderBy, predicate);
+                return $q.when(speakers);
+            }
 
             return EntityQuery.from('Speakers')
                 .select('id, firstName, lastName, imageSource')
                 .orderBy(speakerOrderBy)
-                .toType('Person')
+                .toType(entityNames.speaker)
                 .using(manager).execute()
                 .to$q(querySecceeded, _queryFailed);
             
             function querySecceeded(data) {
                 speakers = data.results;
+                for (var i = speakers.length; i--;) {
+                    speakers[i].isSpeaker = true;
+                }
                 log('Retrieved [Speaker Partials] from remote data source', speakers.length, true);
                 return speakers;
             }
         }
 
-        function getSessionPartials() {
+        function getSessionPartials(forceRemote) {
             var orderBy = 'timeSlotId, level, speaker.firstName';
             var sessions;
+
+            if (_areSessionsLoaded() && !forceRemote) {
+                // get local data
+                sessions = _getAllLocal(entityNames.session, orderBy);
+                return $q.when(sessions);
+            }
 
             return EntityQuery.from('Sessions') //name 'Sessions' match the name in the WebApi Controllers
                 .select('id, title, code, speakerId, trackId, timeSlotId, roomId, level, tags')
                 .orderBy(orderBy)
-                .toType('Session')
+                .toType(entityNames.session)
                 .using(manager).execute()
                 .to$q(querySecceeded, _queryFailed);
             //toType tells breeze what entity type to use for the projection
 
             function querySecceeded(data) {
                 sessions = data.results;
+                _areSessionsLoaded(true);
                 log('Retrieved [Session Partials] from remote data source', sessions.length, true);
                 return sessions;
             }
@@ -92,7 +133,7 @@
         function prime() {
             if (primePromise) return primePromise;
             
-            primePromise = $q.all([getLookups(), getSpeakerPartials()])
+            primePromise = $q.all([getLookups(), getSpeakerPartials(true)])
                 .then(extendMetadata)
                 .then(success);//we will cache Lookups[Rooms, Tracks and TimeSlots] because we use them a lot in the app
             return primePromise;
@@ -133,9 +174,10 @@
             };
         }
 
-        function _getAllLocal(resource, ordering) {
+        function _getAllLocal(resource, ordering, predicate) {
             return EntityQuery.from(resource)
                 .orderBy(ordering)
+                .where(predicate)
                 .using(manager)
                 .executeLocally();
         }
@@ -156,6 +198,21 @@
             var msg = config.appErrorPrefix + 'Error retrieving data.' + error.message;
             logError(msg, error);
             throw error;
+        }
+
+        function _areSessionsLoaded(value) {
+            return _areItemsLoaded('sessions', value);
+        }
+        
+        function _areAttendeesLoaded(value) {
+            return _areItemsLoaded('attendees', value);
+        }
+
+        function _areItemsLoaded(key, value) {
+            if (value === undefined) {
+                return storeMeta.isLoaded[key]; // get
+            }
+            return storeMeta.isLoaded[key] = value; // set
         }
     }
 })();

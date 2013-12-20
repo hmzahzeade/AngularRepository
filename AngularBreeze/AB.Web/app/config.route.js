@@ -30,23 +30,33 @@
                     }
                 }
             }, {
-                url: '/admin',
-                config: {
-                    title: 'admin',
-                    templateUrl: 'app/admin/admin.html',
-                    settings: {
-                        nav: 2,
-                        content: '<i class="icon-lock"></i> Admin'
-                    }
-                }
-            }, {
                 url: '/sessions',
                 config: {
                     title: 'sessions',
                     templateUrl: 'app/session/sessions.html',
                     settings: {
-                        nav: 3,
+                        nav: 2,
                         content: '<i class="icon-calendar"></i> Sessions'
+                    }
+                }
+            }, {
+                url: '/speakers',
+                config: {
+                    title: 'speakers',
+                    templateUrl: 'app/speaker/speakers.html',
+                    settings: {
+                        nav: 3,
+                        content: '<i class="icon-user"></i> Speakers'
+                    }
+                }
+            }, {
+                url: '/attendees',
+                config: {
+                    title: 'attendees',
+                    templateUrl: 'app/attendee/attendees.html',
+                    settings: {
+                        nav: 4,
+                        content: '<i class="icon-group"></i> Attendees'
                     }
                 }
             }

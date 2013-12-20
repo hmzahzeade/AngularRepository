@@ -2,15 +2,15 @@
     'use strict';
 
     // Controller name is handy for logging
-    var controllerId = 'sessions';
+    var controllerId = 'speakers';
 
     // Define the controller on the module.
     // Inject the dependencies. 
     // Point to the controller definition function.
     angular.module('app').controller(controllerId,
-        ['common', 'datacontext', sessions]);
+        ['datacontext', 'common', speakers]);
 
-    function sessions(common, datacontext) {
+    function speakers(datacontext, common) {
         // Using 'Controller As' syntax, so we assign this to the vm variable (for viewmodel).
         var vm = this;
         var getLogFn = common.logger.getLogFn;
@@ -18,29 +18,27 @@
 
         // Bindable properties and functions are placed on vm.
         vm.refresh = refresh;
-        vm.sessions = [];
-        vm.title = 'Sessions';
+        vm.speakers = [];
+        vm.title = 'Speakers';
 
         activate();
 
         function activate() {
-            //TODO get our sessions
-            var promises = [getSessions()];
+            var promises = [getSpeakers()];
             common.activateController(promises, controllerId)
-                .then(function () { log('Activated Sessions View'); });
+                .then(function () { log('Activated Speakers View'); });
         }
 
-        function getSessions(forceRefresh) {
-            return datacontext.getSessionPartials(forceRefresh).then(function (data) {
-                return vm.sessions = data;
+        //#region Internal Methods        
+        function getSpeakers(forceRefresh) {
+            return datacontext.getSpeakerPartials(forceRefresh).then(function (data) {
+                return vm.speakers = data;
             });
         }
-
+        
         function refresh() {
-            getSessions(true);
+            getSpeakers(true);
         }
-        //#region Internal Methods        
-
         //#endregion
     }
 })();
