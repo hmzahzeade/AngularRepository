@@ -16,10 +16,10 @@
     ]);
 
     // Handle routing errors and success events
-    app.run(['$route', '$rootScope', '$q', 'datacontext',
-        function ($route, $rootScope, $q, datacontext) {
-        // Include $route to kick start the router.
-        breeze.core.extendQ($rootScope, $q);
-        datacontext.prime();
-    }]);
+    app.run(['$route', '$rootScope', '$q', 'datacontext', 'routemediator',
+        function ($route, $rootScope, $q, datacontext, routemediator) {
+            // Include $route to kick start the router.
+            breeze.core.extendQ($rootScope, $q);
+            routemediator.setRoutingHandlers();
+        }]);
 })();
