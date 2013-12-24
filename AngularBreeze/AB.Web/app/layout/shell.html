@@ -1,4 +1,15 @@
 ﻿<div data-ng-controller="shell as vm">
+    <div id="splash-page" data-ng-show="vm.showSplash"
+        class="dissolve-animation">
+        <div class="page-splash">
+            <div class="page-splash-message">
+                Hot Towel Angular-Breeze
+            </div>
+            <div class="progress progress-striped active page-progress-bar">
+                <div class="bar"></div>
+            </div>
+        </div>
+    </div>
     <header class="clearfix">
         <div data-ng-include="'/app/layout/topnav.html'"></div>
     </header>
@@ -9,7 +20,8 @@
         </div>
 
         <div data-ng-include="'/app/layout/sidebar.html'"></div>
-
+        
+        <!--angular animation .shuffle-animation - configured in styles.css -->
         <div data-ng-view class="shuffle-animation"></div>
     </section>
 </div>

@@ -30,15 +30,16 @@
             getAttendeeCount: getAttendeeCount,
             getFilteredCount: getFilteredCount,
             getPeople: getPeople,
-            getMessageCount: getMessageCount,
+            getSessionCount: getSessionCount,
             getSessionPartials: getSessionPartials,
             getSpeakerPartials: getSpeakerPartials,
+            getSpeakersLocal: getSpeakersLocal,
+            getSpeakersTopLocal: getSpeakersTopLocal,
+            getTrackCounts: getTrackCounts,
             prime: prime
         };
 
         return service;
-
-        function getMessageCount() { return $q.when(72); }
 
         function getPeople() {
             var people = [
@@ -111,7 +112,8 @@
                 return $q.when(_getLocalEntityCount(entityNames.attendee));
             }
 
-            return EntityQuery.from(entityNames.attendee)
+            return EntityQuery.from('Persons')
+                .take(0).inlineCount()
                 .using(manager).execute()
                 .to$q(_getInlineCount);
         }
@@ -126,6 +128,55 @@
                 .using(manager)
                 .executeLocally();
             return entities.length;
+        }
+
+        function getSessionCount() {
+            if (_areSessionsLoaded()) {
+                return $q.when(_getLocalEntityCount(entityNames.session));
+            }
+
+            return EntityQuery.from('Sessions')
+                .take(0).inlineCount()  //take(0) - return total number
+                .using(manager).execute()
+                .to$q(_getInlineCount);
+        }
+
+        function getTrackCounts() {
+            return getSessionPartials().then(function(data) {
+                var sessions = data;
+                //loop through the sessions and create a mapped track counter object
+                var trackMap = sessions.reduce(function(accum, session) {
+                    var trackName = session.track.name;
+                    var trackId = session.track.id;
+                    if (accum[trackId - 1]) {
+                        accum[trackId - 1].count++;
+                    } else {
+                        accum[trackId - 1] = {
+                            track: trackName,
+                            count: 1
+                        };
+                    }
+                    return accum;
+                }, []);
+                return trackMap;
+            });
+        }
+        
+        function getSpeakersLocal() {
+            var orderBy = 'firstName, lastName';
+            var predicate = breeze.Predicate.create('isSpeaker', '==', true);
+            return _getAllLocal(entityNames.speaker, orderBy, predicate);
+        }
+
+        function getSpeakersTopLocal() {
+            var orderBy = 'firstName, lastName';
+            var predicate = breeze.Predicate.create('lastName', '==', 'Papa')
+                .or('lastName', '==', 'Guthrie')
+                .or('lastName', '==', 'Bell')
+                .or('lastName', '==', 'Hanselman')
+                .or('lastName', '==', 'Lerman')
+                .and('isSpeaker', '==', true);
+            return _getAllLocal(entityNames.speaker, orderBy, predicate);
         }
 
         function getFilteredCount(nameFilter) {

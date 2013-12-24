@@ -1,3 +1,7 @@
+MUST HAVE WEB ESSENTIALS PLUGIN FOR VS:
+http://vswebessentials.com/
+
+
 Pluralsight - 
 1) Angular fundamentals: 
    http://pluralsight.com/training/courses/TableOfContents?courseName=angularjs-fundamentals
@@ -27,6 +31,8 @@ http://sidewaffle.com/
 AngularJS -- Quick Role-Based Authentication
 http://arthur.gonigberg.com/2013/06/29/angularjs-role-based-auth/
 
+ANGULAR ANIMATIONS
+http://www.yearofmoo.com
 
 Official documentation
 http://www.asp.net/web-api/
