@@ -14,7 +14,8 @@ NuGet Packages:
 (if error on 4: "Nuget External packages cannot depend on packages that target projects" - 
 update NuGet Package Manager - go to Tools->Extensions and Updates-> Updates)
 
-
+//LIVE DEMO
+http://cc-ng-z.azurewebsites.net/#/
 
 https://github.com/johnpapa/Pluralsight-CC-Angular-Breeze-Extra
 

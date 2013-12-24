@@ -22,11 +22,13 @@
             isLoaded: {
                 sessions: false,
                 attendees: false
-            }  
+            }
         };
 
         var service = {
             getAttendees: getAttendees,
+            getAttendeeCount: getAttendeeCount,
+            getFilteredCount: getFilteredCount,
             getPeople: getPeople,
             getMessageCount: getMessageCount,
             getSessionPartials: getSessionPartials,
@@ -51,29 +53,90 @@
             return $q.when(people);
         }
 
-        function getAttendees(forceRemote) {
+        function getAttendees(forceRemote, page, size, nameFilter) {
             var orderBy = 'firstName, lastName';
-            var attendees = [];
+            //var attendees = [];
+
+            var take = size || 20;
+            var skip = page ? (page - 1) * size : 0;
 
             if (_areAttendeesLoaded() && !forceRemote) {
                 // get local data
-                attendees = _getAllLocal(entityNames.attendee, orderBy);
-                return $q.when(attendees);
+                return $q.when(getByPage());
+                //attendees = _getAllLocal(entityNames.attendee, orderBy);
+                //return $q.when(attendees);
             }
 
-            return EntityQuery.from('Persons')
+            return EntityQuery.from("Persons")
                 .select('id, firstName, lastName, imageSource')
                 .orderBy(orderBy)
                 .toType(entityNames.attendee)
                 .using(manager).execute()
                 .to$q(querySecceeded, _queryFailed);
 
-            function querySecceeded(data) {
-                attendees = data.results;
-                _areAttendeesLoaded(true);
-                log('Retrieved [Attendees] from remote data source', attendees.length, true);
+            //region local sub functions
+            function getByPage() {
+                var predicate = null;
+                if (nameFilter) {
+                    predicate = _fullNamePredicate(nameFilter);
+                }
+                var attendees = EntityQuery.from(entityNames.attendee)
+                    .where(predicate)
+                    .take(take)
+                    .skip(skip)
+                    .orderBy(orderBy)
+                    .using(manager)
+                    .executeLocally();
+
                 return attendees;
             }
+
+            function querySecceeded(data) {
+                //attendees = data.results;
+                _areAttendeesLoaded(true);
+                log('Retrieved [Attendees] from remote data source', data.results.length, true);
+                //return attendees;
+                return getByPage();
+            }
+        }
+
+        function _fullNamePredicate(filterValue) {
+            return breeze.Predicate
+                .create('firstName', 'contains', filterValue)
+                .or('lastName', 'contains', filterValue);
+        }
+
+        function getAttendeeCount() {
+            if(_areAttendeesLoaded()) {
+                return $q.when(_getLocalEntityCount(entityNames.attendee));
+            }
+
+            return EntityQuery.from(entityNames.attendee)
+                .using(manager).execute()
+                .to$q(_getInlineCount);
+        }
+
+        function _getInlineCount(data) {
+            //inlineCount - breeze property - gets the number of items returned
+            return data.inlineCount;
+        }
+
+        function _getLocalEntityCount(resource) {
+            var entities = EntityQuery.from(resource)
+                .using(manager)
+                .executeLocally();
+            return entities.length;
+        }
+
+        function getFilteredCount(nameFilter) {
+            var predicate = _fullNamePredicate(nameFilter);
+            
+            var attendees = EntityQuery.from(entityNames.attendee)
+                    .where(predicate)
+                    .using(manager)
+                    .executeLocally();
+
+            return attendees.length;
         }
 
         function getSpeakerPartials(forceRemote) {
@@ -93,7 +156,7 @@
                 .toType(entityNames.speaker)
                 .using(manager).execute()
                 .to$q(querySecceeded, _queryFailed);
-            
+
             function querySecceeded(data) {
                 speakers = data.results;
                 for (var i = speakers.length; i--;) {
@@ -132,7 +195,7 @@
 
         function prime() {
             if (primePromise) return primePromise;
-            
+
             primePromise = $q.all([getLookups(), getSpeakerPartials(true)])
                 .then(extendMetadata)
                 .then(success);//we will cache Lookups[Rooms, Tracks and TimeSlots] because we use them a lot in the app
@@ -147,17 +210,17 @@
                 var metadataStore = manager.metadataStore;
 
                 var types = metadataStore.getEntityTypes();
-                types.forEach(function(type) {
-                    if(type instanceof breeze.EntityType) {
+                types.forEach(function (type) {
+                    if (type instanceof breeze.EntityType) {
                         set(type.shortName, type);
                     }
                 });
 
                 var personEntityName = entityNames.person;
-                ['Speakers', 'Speaker', 'Attendees', 'Attendee'].forEach(function(r) {
+                ['Speakers', 'Speaker', 'Attendees', 'Attendee'].forEach(function (r) {
                     set(r, personEntityName);
                 });
-                
+
 
                 function set(resourceName, entityName) {
                     metadataStore.setEntityTypeForResourceName(resourceName, entityName);
@@ -181,19 +244,19 @@
                 .using(manager)
                 .executeLocally();
         }
-        
+
         function getLookups() {
             return EntityQuery.from('Lookups')
                 .using(manager).execute()
                 .to$q(querySecceeded, _queryFailed);
-            
+
             function querySecceeded(data) {
                 //Breeze caches the data locally in memory
                 log('Retrieved [Lookups]', data, true);
                 return true;
             }
         }
-        
+
         function _queryFailed(error) {
             var msg = config.appErrorPrefix + 'Error retrieving data.' + error.message;
             logError(msg, error);
@@ -203,7 +266,7 @@
         function _areSessionsLoaded(value) {
             return _areItemsLoaded('sessions', value);
         }
-        
+
         function _areAttendeesLoaded(value) {
             return _areItemsLoaded('attendees', value);
         }

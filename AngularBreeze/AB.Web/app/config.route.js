@@ -85,6 +85,13 @@
                     }
                 }
             }, {
+                url: '/sessions/search/:search',
+                config: {
+                    title: 'sessions-search',
+                    templateUrl: 'app/session/sessions.html',
+                    settings: { /*we dont need to show this route*/ }
+                }
+            }, {
                 url: '/speakers',
                 config: {
                     title: 'speakers',
