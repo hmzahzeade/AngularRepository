@@ -42,32 +42,32 @@
         }
 
         function getAttendeeCount() {
-            return datacontext.getAttendeeCount()
+            return datacontext.attendee.getCount()
                 .then(function (data) {
                     return vm.attendeeCount = data;
             });
         }
         
         function getSessionCount() {
-            return datacontext.getSessionCount()
+            return datacontext.session.getCount()
                 .then(function (data) {
                     return vm.sessionCount = data;
                 });
         }
 
         function getTrackCounts() {
-            return datacontext.getTrackCounts()
+            return datacontext.session.getTrackCounts()
                 .then(function (data) {
                     return vm.content.tracks = data;
                 });
         }
 
         function getTopSpeakers() {
-            vm.speakers.list = datacontext.getSpeakersTopLocal();
+            vm.speakers.list = datacontext.speaker.getTopLocal();
         }
         
         function getSpeakerCount() {
-            var speakers = datacontext.getSpeakersLocal();
+            var speakers = datacontext.speaker.getAllLocal();
             vm.speakerCount = speakers.length;
         }
 

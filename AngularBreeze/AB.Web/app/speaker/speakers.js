@@ -35,7 +35,7 @@
 
         //#region Internal Methods        
         function getSpeakers(forceRefresh) {
-            return datacontext.getSpeakerPartials(forceRefresh).then(function (data) {
+            return datacontext.speaker.getPartials(forceRefresh).then(function (data) {
                 vm.speakers = data;
                 applyFilter();
                 return vm.speakers;

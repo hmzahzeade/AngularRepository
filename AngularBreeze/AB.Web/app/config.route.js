@@ -102,6 +102,13 @@
                     }
                 }
             }, {
+                url: "/speaker/:id",
+                config: {
+                    templateUrl: "app/speaker/speakerdetail.html",
+                    title: "speaker",
+                    settings: {}
+                }
+            }, {
                 url: '/attendees',
                 config: {
                     title: 'attendees',

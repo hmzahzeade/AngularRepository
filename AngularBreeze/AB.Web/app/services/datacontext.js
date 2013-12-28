@@ -3,9 +3,9 @@
 
     var serviceId = 'datacontext';
     angular.module('app').factory(serviceId,
-        ['common', 'entityManagerFactory', 'config', 'model', datacontext]);
+        ['common', 'entityManagerFactory', 'model', 'repositories', datacontext]);
 
-    function datacontext(common, emFactory, config, model) {
+    function datacontext(common, emFactory, model, repositories) {
         var EntityQuery = breeze.EntityQuery;
         var entityNames = model.entityNames;
 
@@ -16,250 +16,66 @@
 
         var manager = emFactory.newManager();
         var primePromise;
+        var repoNames = ['attendee', 'lookup', 'session', 'speaker'];
         var $q = common.$q;
 
-        var storeMeta = {
-            isLoaded: {
-                sessions: false,
-                attendees: false
-            }
+        var service = {
+            prime: prime,
+            //Repositories to be added on demand:
+            //      attendees
+            //      lookups
+            //      sessions
+            //      speakers
         };
 
-        var service = {
-            getAttendees: getAttendees,
-            getAttendeeCount: getAttendeeCount,
-            getFilteredCount: getFilteredCount,
-            getPeople: getPeople,
-            getSessionCount: getSessionCount,
-            getSessionPartials: getSessionPartials,
-            getSpeakerPartials: getSpeakerPartials,
-            getSpeakersLocal: getSpeakersLocal,
-            getSpeakersTopLocal: getSpeakersTopLocal,
-            getTrackCounts: getTrackCounts,
-            prime: prime
-        };
+        init();
 
         return service;
 
-        function getPeople() {
-            var people = [
-                { firstName: 'John', lastName: 'Papa', age: 25, location: 'Florida' },
-                { firstName: 'Ward', lastName: 'Bell', age: 31, location: 'California' },
-                { firstName: 'Colleen', lastName: 'Jones', age: 21, location: 'New York' },
-                { firstName: 'Madelyn', lastName: 'Green', age: 18, location: 'North Dakota' },
-                { firstName: 'Ella', lastName: 'Jobs', age: 18, location: 'South Dakota' },
-                { firstName: 'Landon', lastName: 'Gates', age: 11, location: 'South Carolina' },
-                { firstName: 'Haley', lastName: 'Guthrie', age: 35, location: 'Wyoming' }
-            ];
-            return $q.when(people);
+        function init() {
+            repositories.init(manager);
+            defineLazyLoadedRepos();
         }
 
-        function getAttendees(forceRemote, page, size, nameFilter) {
-            var orderBy = 'firstName, lastName';
-            //var attendees = [];
-
-            var take = size || 20;
-            var skip = page ? (page - 1) * size : 0;
-
-            if (_areAttendeesLoaded() && !forceRemote) {
-                // get local data
-                return $q.when(getByPage());
-                //attendees = _getAllLocal(entityNames.attendee, orderBy);
-                //return $q.when(attendees);
-            }
-
-            return EntityQuery.from("Persons")
-                .select('id, firstName, lastName, imageSource')
-                .orderBy(orderBy)
-                .toType(entityNames.attendee)
-                .using(manager).execute()
-                .to$q(querySecceeded, _queryFailed);
-
-            //region local sub functions
-            function getByPage() {
-                var predicate = null;
-                if (nameFilter) {
-                    predicate = _fullNamePredicate(nameFilter);
-                }
-                var attendees = EntityQuery.from(entityNames.attendee)
-                    .where(predicate)
-                    .take(take)
-                    .skip(skip)
-                    .orderBy(orderBy)
-                    .using(manager)
-                    .executeLocally();
-
-                return attendees;
-            }
-
-            function querySecceeded(data) {
-                //attendees = data.results;
-                _areAttendeesLoaded(true);
-                log('Retrieved [Attendees] from remote data source', data.results.length, true);
-                //return attendees;
-                return getByPage();
-            }
-        }
-
-        function _fullNamePredicate(filterValue) {
-            return breeze.Predicate
-                .create('firstName', 'contains', filterValue)
-                .or('lastName', 'contains', filterValue);
-        }
-
-        function getAttendeeCount() {
-            if(_areAttendeesLoaded()) {
-                return $q.when(_getLocalEntityCount(entityNames.attendee));
-            }
-
-            return EntityQuery.from('Persons')
-                .take(0).inlineCount()
-                .using(manager).execute()
-                .to$q(_getInlineCount);
-        }
-
-        function _getInlineCount(data) {
-            //inlineCount - breeze property - gets the number of items returned
-            return data.inlineCount;
-        }
-
-        function _getLocalEntityCount(resource) {
-            var entities = EntityQuery.from(resource)
-                .using(manager)
-                .executeLocally();
-            return entities.length;
-        }
-
-        function getSessionCount() {
-            if (_areSessionsLoaded()) {
-                return $q.when(_getLocalEntityCount(entityNames.session));
-            }
-
-            return EntityQuery.from('Sessions')
-                .take(0).inlineCount()  //take(0) - return total number
-                .using(manager).execute()
-                .to$q(_getInlineCount);
-        }
-
-        function getTrackCounts() {
-            return getSessionPartials().then(function(data) {
-                var sessions = data;
-                //loop through the sessions and create a mapped track counter object
-                var trackMap = sessions.reduce(function(accum, session) {
-                    var trackName = session.track.name;
-                    var trackId = session.track.id;
-                    if (accum[trackId - 1]) {
-                        accum[trackId - 1].count++;
-                    } else {
-                        accum[trackId - 1] = {
-                            track: trackName,
-                            count: 1
-                        };
+        // Add ES5 property to datacontext for each repo
+        // datacontext.lookup.getAll()
+        function defineLazyLoadedRepos() {
+            repoNames.forEach(function(name) {
+                Object.defineProperty(service, name, {
+                    configurable: true, //we can redefine this property once later
+                    get : function () {
+                        // The 1st time repo is request via this property,
+                        // we ask the repositories for it (which will inject it)
+                        var repo = repositories.getRepo(name);
+                        // Rewrite this property to always return this repo;
+                        // no longer redefinable
+                        Object.defineProperty(service, name, {
+                            value: repo,
+                            configurable: false,
+                            enumerable: true
+                        });
+                        return repo;
                     }
-                    return accum;
-                }, []);
-                return trackMap;
+                });
             });
         }
-        
-        function getSpeakersLocal() {
-            var orderBy = 'firstName, lastName';
-            var predicate = breeze.Predicate.create('isSpeaker', '==', true);
-            return _getAllLocal(entityNames.speaker, orderBy, predicate);
-        }
-
-        function getSpeakersTopLocal() {
-            var orderBy = 'firstName, lastName';
-            var predicate = breeze.Predicate.create('lastName', '==', 'Papa')
-                .or('lastName', '==', 'Guthrie')
-                .or('lastName', '==', 'Bell')
-                .or('lastName', '==', 'Hanselman')
-                .or('lastName', '==', 'Lerman')
-                .and('isSpeaker', '==', true);
-            return _getAllLocal(entityNames.speaker, orderBy, predicate);
-        }
-
-        function getFilteredCount(nameFilter) {
-            var predicate = _fullNamePredicate(nameFilter);
-            
-            var attendees = EntityQuery.from(entityNames.attendee)
-                    .where(predicate)
-                    .using(manager)
-                    .executeLocally();
-
-            return attendees.length;
-        }
-
-        function getSpeakerPartials(forceRemote) {
-            var predicate = breeze.Predicate.create('isSpeaker', '==', true);
-            var speakerOrderBy = 'firstName, lastName';
-            var speakers = [];
-
-            if (!forceRemote) {
-                // get local data
-                speakers = _getAllLocal(entityNames.speaker, speakerOrderBy, predicate);
-                return $q.when(speakers);
-            }
-
-            return EntityQuery.from('Speakers')
-                .select('id, firstName, lastName, imageSource')
-                .orderBy(speakerOrderBy)
-                .toType(entityNames.speaker)
-                .using(manager).execute()
-                .to$q(querySecceeded, _queryFailed);
-
-            function querySecceeded(data) {
-                speakers = data.results;
-                for (var i = speakers.length; i--;) {
-                    speakers[i].isSpeaker = true;
-                }
-                log('Retrieved [Speaker Partials] from remote data source', speakers.length, true);
-                return speakers;
-            }
-        }
-
-        function getSessionPartials(forceRemote) {
-            var orderBy = 'timeSlotId, level, speaker.firstName';
-            var sessions;
-
-            if (_areSessionsLoaded() && !forceRemote) {
-                // get local data
-                sessions = _getAllLocal(entityNames.session, orderBy);
-                return $q.when(sessions);
-            }
-
-            return EntityQuery.from('Sessions') //name 'Sessions' match the name in the WebApi Controllers
-                .select('id, title, code, speakerId, trackId, timeSlotId, roomId, level, tags')
-                .orderBy(orderBy)
-                .toType(entityNames.session)
-                .using(manager).execute()
-                .to$q(querySecceeded, _queryFailed);
-            //toType tells breeze what entity type to use for the projection
-
-            function querySecceeded(data) {
-                sessions = data.results;
-                _areSessionsLoaded(true);
-                log('Retrieved [Session Partials] from remote data source', sessions.length, true);
-                return sessions;
-            }
-        }
-
+       
         function prime() {
             if (primePromise) return primePromise;
 
-            primePromise = $q.all([getLookups(), getSpeakerPartials(true)])
+            primePromise = $q.all([service.lookup.getAll(),
+                service.speaker.getPartials(true)])
                 .then(extendMetadata)
                 .then(success);//we will cache Lookups[Rooms, Tracks and TimeSlots] because we use them a lot in the app
             return primePromise;
 
             function success() {
-                setLookups();
+                service.lookup.setLookups();
                 log('Primed the data');
             }
 
             function extendMetadata() {
                 var metadataStore = manager.metadataStore;
-
                 var types = metadataStore.getEntityTypes();
                 types.forEach(function (type) {
                     if (type instanceof breeze.EntityType) {
@@ -272,61 +88,23 @@
                     set(r, personEntityName);
                 });
 
-
                 function set(resourceName, entityName) {
                     metadataStore.setEntityTypeForResourceName(resourceName, entityName);
                 }
             }
         }
-
-        function setLookups() {
-            //service object is the one that has been returned from current datacontext service
-            service.lookupCachedData = {
-                rooms: _getAllLocal(entityNames.room, 'name'),
-                tracks: _getAllLocal(entityNames.track, 'name'),
-                timeslots: _getAllLocal(entityNames.timeSlot, 'start')
-            };
-        }
-
-        function _getAllLocal(resource, ordering, predicate) {
-            return EntityQuery.from(resource)
-                .orderBy(ordering)
-                .where(predicate)
-                .using(manager)
-                .executeLocally();
-        }
-
-        function getLookups() {
-            return EntityQuery.from('Lookups')
-                .using(manager).execute()
-                .to$q(querySecceeded, _queryFailed);
-
-            function querySecceeded(data) {
-                //Breeze caches the data locally in memory
-                log('Retrieved [Lookups]', data, true);
-                return true;
-            }
-        }
-
-        function _queryFailed(error) {
-            var msg = config.appErrorPrefix + 'Error retrieving data.' + error.message;
-            logError(msg, error);
-            throw error;
-        }
-
-        function _areSessionsLoaded(value) {
-            return _areItemsLoaded('sessions', value);
-        }
-
-        function _areAttendeesLoaded(value) {
-            return _areItemsLoaded('attendees', value);
-        }
-
-        function _areItemsLoaded(key, value) {
-            if (value === undefined) {
-                return storeMeta.isLoaded[key]; // get
-            }
-            return storeMeta.isLoaded[key] = value; // set
+        
+        function getPeople() {
+            var people = [
+                { firstName: 'John', lastName: 'Papa', age: 25, location: 'Florida' },
+                { firstName: 'Ward', lastName: 'Bell', age: 31, location: 'California' },
+                { firstName: 'Colleen', lastName: 'Jones', age: 21, location: 'New York' },
+                { firstName: 'Madelyn', lastName: 'Green', age: 18, location: 'North Dakota' },
+                { firstName: 'Ella', lastName: 'Jobs', age: 18, location: 'South Dakota' },
+                { firstName: 'Landon', lastName: 'Gates', age: 11, location: 'South Carolina' },
+                { firstName: 'Haley', lastName: 'Guthrie', age: 35, location: 'Wyoming' }
+            ];
+            return $q.when(people);
         }
     }
 })();

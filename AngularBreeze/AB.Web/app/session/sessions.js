@@ -49,7 +49,7 @@
         }
 
         function getSessions(forceRefresh) {
-            return datacontext.getSessionPartials(forceRefresh).then(function (data) {
+            return datacontext.session.getPartials(forceRefresh).then(function (data) {
                 return vm.sessions = vm.filteredSessions = data;
             });
         }

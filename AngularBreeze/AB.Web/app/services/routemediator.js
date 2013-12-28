@@ -4,10 +4,6 @@
     // Factory name is handy for logging
     var serviceId = 'routemediator';
 
-    // Define the factory on the module.
-    // Inject the dependencies. 
-    // Point to the factory definition function.
-    // TODO: replace app with your module name
     angular.module('app').factory(serviceId,
         ['$rootScope', 'config', 'logger', '$location', routemediator]);
 
