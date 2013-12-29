@@ -2,7 +2,7 @@
     <section class="matter">
         <div class="container-fluid">
 
-            <div>
+            <!--<div>
                 <button class="btn btn-info" data-ng-click="vm.goBack()">
                     <i class="icon-hand-left"></i>
                     Back
@@ -20,52 +20,49 @@
                 <span data-ng-show="vm.hasChanges" class="dissolve-animation">
                     <i class="icon-asterisk icon-asterisk-large"></i>
                 </span>
-            </div>
+            </div>-->
 
             <div class="widget wgreen">
-                <div data-cc-widget-header title="{{vm.title}}" class="widget-head">
-                    <div class="page-title pull-left">{{vm.fullName}}</div>
-                    <small class="page-title-subtle ng-hide" data-ng-show="subtitle">()</small>
-                    <small class="pull-right page-title-subtle ng-hide" data-ng-show="rightText"></small>
-                    <div class="clearfix"></div>
-                </div>
+                <div data-cc-widget-header title="{{vm.getTitle()}}"></div>
                 <div class="widget-content user">
                     <div>
-                        <label>First Name</label>
-                        <input data-ng-model="vm.speaker.firstName" data-z-validate placeholder="First Name"/>
-                        <span class="z-decorator">
-                            <span class="icon-asterisk-invalid z-required" title="Required">*</span>
-                        </span>
-                    </div>
-                    <div>
-                        <label>Last Name</label>
-                        <input data-ng-model="vm.speaker.lastName" data-z-validate placeholder="Last Name"/>
-                        <span class="z-decorator">
-                            <span class="icon-asterisk-invalid z-required" title="Required">*</span>
-                        </span>
-                    </div>
-                    <div>
-                        <label>Last Name</label>
-                        <input data-ng-model="vm.speaker.email" data-z-validate placeholder="Email"/>
-                        <span class="z-decorator"></span>
-                    </div>
-                    <div>
-                        <label>Blog</label>
-                        <input data-ng-model="vm.speaker.blog" data-z-validate placeholder="Blog"/>
-                        <span class="z-decorator"></span>
-                    </div>
-                    <div>
-                        <label>Twitter</label>
-                        <input data-ng-model="vm.speaker.twitter" data-z-validate placeholder="Twitter"/>
-                        <span class="z-decorator"></span>
-                    </div>
-                    <div>
-                        <img data-cc-img-person="{{vm.speaker.imageSource}}" class="img-polaroid"/>
-                    </div>
-                    <div>
-                        <label>Bio</label>
-                        <textarea data-ng-model="vm.speaker.bio" placeholder="Enter speaker bio"></textarea>
-                        <span class="z-decorator"></span>
+                        <div>
+                            <label>First Name</label>
+                            <input data-ng-model="vm.speaker.firstName"
+                                placeholder="First Name" />
+                            <!--<span class="z-decorator">
+                                <span class="icon-asterisk-invalid z-required" title="Required">*</span>
+                            </span>-->
+                        </div>
+                        <div>
+                            <label>Last Name</label>
+                            <input data-ng-model="vm.speaker.lastName"
+                                placeholder="Last Name" />
+                        </div>
+                        <div>
+                            <label>Last Name</label>
+                            <input data-ng-model="vm.speaker.email"
+                                placeholder="Email" />
+                        </div>
+                        <div>
+                            <label>Blog</label>
+                            <input data-ng-model="vm.speaker.blog"
+                                placeholder="Blog" />
+                        </div>
+                        <div>
+                            <label>Twitter</label>
+                            <input data-ng-model="vm.speaker.twitter"
+                                placeholder="Twitter" />
+                        </div>
+                        <div>
+                            <img data-cc-img-person="{{vm.speaker.imageSource}}" 
+                                class="img-polaroid" alt="" />
+                        </div>
+                        <div>
+                            <label>Bio</label>
+                            <textarea data-ng-model="vm.speaker.bio"
+                                placeholder="Enter speaker bio"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -75,6 +75,7 @@
 
             function Person() {
                 //extend client model with isSpeaker property
+                this.isPartial = false;
                 this.isSpeaker = false;
             }
 

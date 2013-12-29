@@ -51,9 +51,11 @@
                 .to$q(querySecceeded, self._queryFailed);
 
             function querySecceeded(data) {
+                var attendees = self._setIsPartialTrue(data.results);
                 //attendees = data.results;
                 self._areItemsLoaded(true);
-                self.log('Retrieved [Attendees] from remote data source', data.results.length, true);
+                self.log('Retrieved [Attendees] from remote data source',
+                    attendees.length, true);
                 //return attendees;
                 return getByPage();
             }

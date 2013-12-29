@@ -8,9 +8,9 @@
     // Inject the dependencies. 
     // Point to the controller definition function.
     angular.module('app').controller(controllerId,
-        ['datacontext', 'common', 'config', speakers]);
+        ['datacontext', 'common', 'config', '$location', speakers]);
 
-    function speakers(datacontext, common, config) {
+    function speakers(datacontext, common, config, $location) {
         // Using 'Controller As' syntax, so we assign this to the vm variable (for viewmodel).
         var vm = this;
         var keyCodes = config.keyCodes;
@@ -19,6 +19,7 @@
 
         // Bindable properties and functions are placed on vm.
         vm.filteredSpeakers = [];
+        vm.gotoSpeaker = gotoSpeaker;
         vm.refresh = refresh;
         vm.speakers = [];
         vm.title = 'Speakers';
@@ -40,6 +41,12 @@
                 applyFilter();
                 return vm.speakers;
             });
+        }
+
+        function gotoSpeaker(speaker) {
+            if(speaker && speaker.id) {
+                $location.path('/speaker/' + speaker.id);
+            }
         }
         
         function refresh() {
