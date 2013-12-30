@@ -85,6 +85,13 @@
                     }
                 }
             }, {
+                url: "/session/:id",
+                config: {
+                    templateUrl: "app/session/sessiondetail.html",
+                    title: "session",
+                    settings: {}
+                }
+            }, {
                 url: '/sessions/search/:search',
                 config: {
                     title: 'sessions-search',

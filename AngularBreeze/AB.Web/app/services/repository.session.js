@@ -17,6 +17,7 @@
             this.entityName = entityName;
             this.manager = mgr;
             // Exposed data access functions
+            this.getById = getById;
             this.getCount = getCount;
             this.getPartials = getPartials;
             this.getTrackCounts = getTrackCounts;
@@ -26,7 +27,11 @@
 
         return Ctor;
 
-        //#region Internal Methods        
+        //#region Internal Methods     
+        function getById(id, forceRemote) {
+            return this._getById(entityName, id, forceRemote);
+        }
+
         function getCount() {
             var self = this;
             if (self._areItemsLoaded()) {
@@ -79,7 +84,7 @@
             //toType tells breeze what entity type to use for the projection
 
             function querySecceeded(data) {
-                sessions = data.results;
+                sessions = self._setIsPartialTrue(data.results);
                 self._areItemsLoaded(true);
                 self.log('Retrieved [Session Partials] from remote data source', sessions.length, true);
                 return sessions;

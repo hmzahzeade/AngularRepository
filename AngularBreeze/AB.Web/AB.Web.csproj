@@ -149,6 +149,8 @@
     <Content Include="app\services\repository.session.js" />
     <Content Include="app\services\repository.speaker.js" />
     <Content Include="app\services\routemediator.js" />
+    <Content Include="app\session\sessiondetail.html" />
+    <Content Include="app\session\sessiondetail.js" />
     <Content Include="app\session\sessions.html" />
     <Content Include="app\session\sessions.js" />
     <Content Include="app\speaker\speakerdetail.html" />

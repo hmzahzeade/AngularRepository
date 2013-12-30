@@ -12,8 +12,8 @@
         // Using 'Controller As' syntax, so we assign this to the vm variable (for viewmodel).
         var vm = this;
         var getLogFn = common.logger.getLogFn;
-        var log = getLogFn(controllerId);
         var logError = getLogFn(controllerId, 'error');
+        var $q = common.$q;
 
         // Bindable properties and functions are placed on vm.
         vm.cancel = cancel;
@@ -82,6 +82,8 @@
         }
 
         function save() {
+            if (!canSave()) { return $q.when(null); } // Must return a promise
+
             vm.isSaving = true;
             datacontext.save().
                 then(function(saveResult) {
