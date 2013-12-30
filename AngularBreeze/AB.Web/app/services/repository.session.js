@@ -17,6 +17,7 @@
             this.entityName = entityName;
             this.manager = mgr;
             // Exposed data access functions
+            this.create = create;
             this.getById = getById;
             this.getCount = getCount;
             this.getPartials = getPartials;
@@ -27,7 +28,11 @@
 
         return Ctor;
 
-        //#region Internal Methods     
+        //#region Internal Methods  
+        function create() {
+            return this.manager.createEntity(entityName);
+        }
+
         function getById(id, forceRemote) {
             return this._getById(entityName, id, forceRemote);
         }

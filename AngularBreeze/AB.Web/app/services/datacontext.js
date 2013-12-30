@@ -41,8 +41,10 @@
         }
 
         function cancel() {
-            manager.rejectChanges();
-            logSuccess('Canceled changes', null, true);
+            if (manager.hasChanges()) {
+                manager.rejectChanges();
+                logSuccess('Canceled changes', null, true);
+            }
         }
         
         // Add ES5 property to datacontext for each repo

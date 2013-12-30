@@ -38,6 +38,7 @@
                 .to$q(querySecceeded, self._queryFailed);
 
             function querySecceeded(data) {
+                model.createNullos(self.manager);
                 //Breeze caches the data locally in memory
                 self.log('Retrieved [Lookups]', data, true);
                 return true;

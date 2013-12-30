@@ -4,10 +4,10 @@
     var controllerId = 'speakerdetail';
 
     angular.module('app').controller(controllerId,
-        ['$routeParams', '$scope', '$window', 
+        ['$location', '$routeParams', '$scope', '$window', 
             'common', 'config', 'datacontext', speakerdetail]);
 
-    function speakerdetail($routeParams, $scope, $window,
+    function speakerdetail($location, $routeParams, $scope, $window,
         common, config, datacontext) {
         // Using 'Controller As' syntax, so we assign this to the vm variable (for viewmodel).
         var vm = this;
@@ -18,7 +18,6 @@
         // Bindable properties and functions are placed on vm.
         vm.cancel = cancel;
         vm.activate = activate;
-        vm.getTitle = getTitle;
         vm.goBack = goBack;
         vm.hasChanges = false;
         vm.isSaving = false;
@@ -47,7 +46,13 @@
 
         function cancel() {
             datacontext.cancel();
+            //if it is create case - check entity state - return to speakers;
+            if (vm.speaker.entityAspect.entityState.isDetached()) {
+                gotoSpeakers();
+            }
         }
+
+        function gotoSpeakers() { $location.path('/speakers');  }
 
         function onDestroy() {
             $scope.$on('$destroy', function() {
@@ -65,16 +70,17 @@
         function getRequestedSpeaker() {
             var val = $routeParams.id;
 
+            if(val ==='new') {
+                vm.speaker = datacontext.speaker.create();
+                return vm.speaker;
+            }
+
             return datacontext.speaker.getById(val)
                 .then(function(data) {
                     vm.speaker = data;
                 }, function (error) {
                     logError('Unable to get speaker ' + val);
                 });
-        }
-
-        function getTitle() {
-            return 'Edit ' + ((vm.speaker && vm.speaker.fullName) || '');
         }
 
         function goBack() {

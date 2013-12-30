@@ -10,6 +10,8 @@
     angular.module('app').factory(serviceId, model);
 
     function model() {
+        var nulloDate = new Date(1990, 0, 1);
+
         // Define the functions and properties to reveal.
         var entityNames = {
             attendee: 'Person',
@@ -23,6 +25,7 @@
 
         var service = {
             configureMetadataStore: configureMetadataStore,
+            createNullos: createNullos,
             entityNames: entityNames
         };
 
@@ -37,7 +40,22 @@
             registerPerson(metadataStore);
         }
 
-        //#region Internal Methods        
+        //#region Internal Methods      
+
+        function createNullos(manager) {
+            var unchanged = breeze.EntityState.Unchanged;
+            
+            createNullo(entityNames.timeSlot, {start: nulloDate, isSessionSlot: true});
+            createNullo(entityNames.room);
+            createNullo(entityNames.track);
+            createNullo(entityNames.speaker, {firstName: ' [Select a person]'});
+
+            function createNullo(entityName, values) {
+                var initialValues = values ||
+                    { name: ' [Select a ' + entityName.toLowerCase() + ']' };
+                return manager.createEntity(entityName, initialValues, unchanged);
+            }
+        }
 
         function registerTimeSlot(metadataStore) {
             metadataStore.registerEntityTypeCtor('TimeSlot', TimeSlot);
@@ -49,7 +67,11 @@
                     //formatted dates are good!
                     var start = this.start;
                     //moment.js is date library
-                    var value = moment.utc(start).format('ddd hh:mm a');
+                    var value = ((start - nulloDate) === 0) ?
+                        ' [Select a timeslot]' :
+                        (start && moment.utc(start).isValid()) ?
+                            moment.utc(start).format('ddd hh:mm a') :
+                            ' [Unknown]';
                     return value;
                 }
             });

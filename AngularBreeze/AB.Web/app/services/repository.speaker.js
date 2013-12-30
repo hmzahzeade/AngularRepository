@@ -18,6 +18,7 @@
             this.entityName = entityName;
             this.manager = mgr;
             // Exposed data access functions
+            this.create = create;
             this.getAllLocal = getAllLocal;
             this.getById = getById;
             this.getTopLocal = getTopLocal;
@@ -28,10 +29,19 @@
 
         return Ctor;
 
-        //#region Internal Methods        
-        function getAllLocal() {
+        //#region Internal Methods   
+
+        function create() {
+            return this.manager.createEntity(entityName);
+        }
+
+        function getAllLocal(includeNullo) {
+            var self = this;
             var predicate = Predicate.create('isSpeaker', '==', true);
-            return this._getAllLocal(entityName, orderBy, predicate);
+            if(includeNullo) {
+                predicate = predicate.or(this._predicates.isNullo);
+            }
+            return self._getAllLocal(entityName, orderBy, predicate);
         }
 
         function getById(id, forceRemote) {

@@ -5,10 +5,10 @@
     var controllerId = 'sessiondetail';
 
     angular.module('app').controller(controllerId,
-        ['$scope', '$routeParams', '$window',
+        ['$location', '$scope', '$routeParams', '$window',
             'common', 'config', 'datacontext', sessiondetail]);
 
-    function sessiondetail($scope, $routeParams, $window,
+    function sessiondetail($location, $scope, $routeParams, $window,
         common, config, datacontext) {
         var vm = this;
         var getLogFn = common.logger.getLogFn;
@@ -16,7 +16,6 @@
         var $q = common.$q;
 
         vm.cancel = cancel;
-        vm.getTitle = getTitle;
         vm.goBack = goBack;
         vm.hasChanges = false;
         vm.isSaving = false;
@@ -47,10 +46,21 @@
 
         function cancel() {
             datacontext.cancel();
+            //if it is create case - check entity state - return to speakers;
+            if (vm.session.entityAspect.entityState.isDetached()) {
+                gotoSessions();
+            }
         }
+        
+        function gotoSessions() { $location.path('/sessions'); }
 
         function getRequestedSession() {
             var val = $routeParams.id;
+            
+            if(val === 'new') {
+                vm.session = datacontext.session.create();
+                return vm.session;
+            }
 
             return datacontext.session.getById(val)
                 .then(function (data) {
@@ -58,10 +68,6 @@
                 }, function (error) {
                     logError('Unable to get session ' + val);
                 });
-        }
-
-        function getTitle() {
-            return 'Edit ' + ((vm.session && vm.session.title) || 'New Session');
         }
 
         function goBack() {
@@ -73,7 +79,7 @@
             vm.rooms = lookups.rooms;
             vm.timeslots = lookups.timeslots;
             vm.tracks = lookups.tracks;
-            vm.speakers = datacontext.speaker.getAllLocal();
+            vm.speakers = datacontext.speaker.getAllLocal(true);
         }
 
         function onDestroy() {
