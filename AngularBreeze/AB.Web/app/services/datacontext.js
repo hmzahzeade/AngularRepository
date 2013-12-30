@@ -3,12 +3,12 @@
 
     var serviceId = 'datacontext';
     angular.module('app').factory(serviceId,
-        ['common', 'entityManagerFactory', 'model', 'repositories', datacontext]);
+        ['common', 'config', 'entityManagerFactory', 'model', 'repositories', datacontext]);
 
-    function datacontext(common, emFactory, model, repositories) {
+    function datacontext(common, config, emFactory, model, repositories) {
         var EntityQuery = breeze.EntityQuery;
         var entityNames = model.entityNames;
-
+        var events = config.events;
         var getLogFn = common.logger.getLogFn;
         var log = getLogFn(serviceId);
         var logError = getLogFn(serviceId, 'error');
@@ -20,6 +20,8 @@
         var $q = common.$q;
 
         var service = {
+            cancel: cancel,
+            save: save,
             prime: prime,
             //Repositories to be added on demand:
             //      attendees
@@ -35,8 +37,14 @@
         function init() {
             repositories.init(manager);
             defineLazyLoadedRepos();
+            setupEventHasChangesChanged();
         }
 
+        function cancel() {
+            manager.rejectChanges();
+            logSuccess('Canceled changes', null, true);
+        }
+        
         // Add ES5 property to datacontext for each repo
         // datacontext.lookup.getAll()
         function defineLazyLoadedRepos() {
@@ -92,6 +100,34 @@
                     metadataStore.setEntityTypeForResourceName(resourceName, entityName);
                 }
             }
+        }
+        
+        function save() {
+            return manager.saveChanges()
+                .to$q(saveSucceeded, saveFailed);
+
+            function saveSucceeded(result) {
+                logSuccess('Saved data', result, true);
+            }
+
+            function saveFailed(error) {
+                var msg = config.appErrorPrefix + 'Save failed: ' +
+                    breeze.saveErrorMessageService.getErrorMessage(error);
+                error.message = msg;
+                logError(msg, error);
+                throw error;
+                
+            }
+        }
+
+        function setupEventHasChangesChanged() {
+            // this event is fired every time some changes over madel has been performed
+            // and we refires it using angular $broadcaset service and handles them on controllers to detect changes
+            manager.hasChangesChanged.subscribe(function (eventArgs) {
+                var data = { hasChanges: eventArgs.hasChanges };
+                // send the message (the ctrl receives it)
+                common.$broadcast(events.hasChangesChanged, data);
+            });
         }
         
         function getPeople() {
