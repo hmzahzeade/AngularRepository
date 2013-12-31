@@ -13,7 +13,7 @@
                     Cancel
                 </button>
                 <button class="btn btn-info" data-ng-click="vm.save()"
-                        data-ng-disabled="!vm.canSave">
+                    data-ng-disabled="!vm.canSave">
                     <i class="icon-save"></i>
                     Save
                 </button>
@@ -28,54 +28,65 @@
             </div>
 
             <div class="widget wgreen">
-                <div data-cc-widget-header 
-                    title="Edit {{vm.session.title || 'New Session'}}"></div>
+                <div data-cc-widget-header
+                    title="Edit {{vm.session.title || 'New Session'}}">
+                </div>
                 <div class="widget-content user">
                     <div>
                         <label>Title</label>
+                        <!-- if model in web-api has validation attributes they will be handled (through odata metadata) and displayed here-->
                         <input data-ng-model="vm.session.title"
+                            data-z-validate
                             placeholder="Session title" />
                     </div>
                     <div>
                         <div>
+                            <!--Custom requireReference validator -->
                             <label>Track</label>
                             <select data-ng-options="t.name for t in vm.tracks"
-                                    data-ng-model="vm.session.track">
+                                data-ng-model="vm.session.track"
+                                data-z-validate>
                             </select>
                         </div>
                         <div>
+                             <!--Custom requireReference validator -->
                             <label>Time slot</label>
                             <select data-ng-options="ts.name for ts in vm.timeslots"
-                                    data-ng-model="vm.session.timeSlot">
+                                    data-ng-model="vm.session.timeSlot"
+                                    data-z-validate>
                             </select>
                         </div>
                         <div>
+                             <!--Custom requireReference validator -->
                             <label>Room</label>
                             <select data-ng-options="r.name for r in vm.rooms"
-                                    data-ng-model="vm.session.room">
+                                    data-ng-model="vm.session.room"
+                                    data-z-validate>
                             </select>
                         </div>
                         <div>
                             <label>Code</label>
                             <input data-ng-model="vm.session.code"
-                                   placeholder="Code" />
+                                placeholder="Code" />
                         </div>
                         <div>
                             <label>Level</label>
                             <input data-ng-model="vm.session.level"
-                                   placeholder="Level" />
+                                placeholder="Level" />
                         </div>
                         <div>
                             <label>Tags</label>
                             <input data-ng-model="vm.session.tagsFormatted"
-                                   placeholder="Tags" />
+                                placeholder="Tags" />
                         </div>
                         <div>
                             <img data-cc-img-person="{{vm.session.speaker.imageSource}}"
-                                 class="img-polaroid" alt="" />
+                                class="img-polaroid" alt="" />
                             <address>{{vm.session.speaker.fullName}}</address>
+                             <!--Custom requireReference validator -->
                             <select data-ng-options="speaker.fullName for speaker in vm.speakers"
-                                    data-ng-model="vm.session.speaker">
+                                data-ng-model="vm.session.speaker"
+                                data-z-validate>
                             </select>
                         </div>
                     </div>
@@ -83,7 +94,7 @@
                         <div>
                             <label>Description</label>
                             <input data-ng-model="vm.session.description"
-                                placeholder="Enter description"/>
+                                placeholder="Enter description" />
                         </div>
                     </div>
                 </div>

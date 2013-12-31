@@ -7,9 +7,9 @@
     // Define the factory on the module.
     // Inject the dependencies. 
     // Point to the factory definition function.
-    angular.module('app').factory(serviceId, model);
+    angular.module('app').factory(serviceId, ['model.validation', model]);
 
-    function model() {
+    function model(modelValidation) {
         var nulloDate = new Date(1990, 0, 1);
 
         // Define the functions and properties to reveal.
@@ -26,7 +26,8 @@
         var service = {
             configureMetadataStore: configureMetadataStore,
             createNullos: createNullos,
-            entityNames: entityNames
+            entityNames: entityNames,
+            extendMetadata: extendMetadata // call from datatcontext prime method (for applying custom breeze validators)
         };
 
         return service;
@@ -38,6 +39,8 @@
             registerTimeSlot(metadataStore);
             registerSession(metadataStore);
             registerPerson(metadataStore);
+
+            modelValidation.createAndRegister(entityNames);
         }
 
         //#region Internal Methods      
@@ -55,6 +58,10 @@
                     { name: ' [Select a ' + entityName.toLowerCase() + ']' };
                 return manager.createEntity(entityName, initialValues, unchanged);
             }
+        }
+
+        function extendMetadata(metadataStore) {
+            modelValidation.applyValidators(metadataStore);
         }
 
         function registerTimeSlot(metadataStore) {

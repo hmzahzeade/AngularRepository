@@ -23,13 +23,15 @@
             </div>
 
             <div class="widget wgreen">
-                <div data-cc-widget-header 
-                    title="Edit {{vm.speaker.fullName || 'New Speaker'}}"></div>
+                <div data-cc-widget-header
+                    title="Edit {{vm.speaker.fullName || 'New Speaker'}}">
+                </div>
                 <div class="widget-content user">
                     <div>
                         <div>
                             <label>First Name</label>
                             <input data-ng-model="vm.speaker.firstName"
+                                data-z-validate
                                 placeholder="First Name" />
                             <!--<span class="z-decorator">
                                 <span class="icon-asterisk-invalid z-required" title="Required">*</span>
@@ -38,25 +40,32 @@
                         <div>
                             <label>Last Name</label>
                             <input data-ng-model="vm.speaker.lastName"
+                                data-z-validate
                                 placeholder="Last Name" />
                         </div>
                         <div>
-                            <label>Last Name</label>
+                            <!--applied in model.validation out of the box breeze email validator-->
+                            <label>Email</label>
                             <input data-ng-model="vm.speaker.email"
-                                placeholder="Email" />
+                                   placeholder="Email"
+                                   data-z-validate />
                         </div>
                         <div>
+                            <!--applied in model.validation out of the box breeze url validator-->
                             <label>Blog</label>
                             <input data-ng-model="vm.speaker.blog"
-                                placeholder="Blog" />
+                                   placeholder="Blog"
+                                   data-z-validate />
                         </div>
                         <div>
+                            <!--Custom twitter validator -->
                             <label>Twitter</label>
                             <input data-ng-model="vm.speaker.twitter"
-                                placeholder="Twitter" />
+                                   placeholder="Twitter"
+                                   data-z-validate />
                         </div>
                         <div>
-                            <img data-cc-img-person="{{vm.speaker.imageSource}}" 
+                            <img data-cc-img-person="{{vm.speaker.imageSource}}"
                                 class="img-polaroid" alt="" />
                         </div>
                         <div>
