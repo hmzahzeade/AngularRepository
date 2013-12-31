@@ -21,6 +21,7 @@
 
         var service = {
             cancel: cancel,
+            markDeleted: markDeleted,
             save: save,
             prime: prime,
             //Repositories to be added on demand:
@@ -68,6 +69,10 @@
                     }
                 });
             });
+        }
+
+        function markDeleted(entity) {
+            return entity.entityAspect.setDeleted();
         }
        
         function prime() {

@@ -13,9 +13,14 @@
                     Cancel
                 </button>
                 <button class="btn btn-info" data-ng-click="vm.save()"
-                    data-ng-disabled="!vm.canSave">
+                        data-ng-disabled="!vm.canSave">
                     <i class="icon-save"></i>
                     Save
+                </button>
+                <button class="btn btn-danger"
+                    data-ng-click="vm.deleteSession()">
+                    <i class="icon-trash"></i>
+                    Delete
                 </button>
                 <span data-ng-show="vm.hasChanges" class="dissolve-animation ng-hide">
                     <i class="icon-asterisk icon-asterisk-large"></i>

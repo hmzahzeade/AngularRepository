@@ -6,16 +6,17 @@
 
     angular.module('app').controller(controllerId,
         ['$location', '$scope', '$routeParams', '$window',
-            'common', 'config', 'datacontext', sessiondetail]);
+            'bootstrap.dialog', 'common', 'config', 'datacontext', sessiondetail]);
 
     function sessiondetail($location, $scope, $routeParams, $window,
-        common, config, datacontext) {
+        bsDialog, common, config, datacontext) {
         var vm = this;
         var getLogFn = common.logger.getLogFn;
         var logError = getLogFn(controllerId, 'error');
         var $q = common.$q;
 
         vm.cancel = cancel;
+        vm.deleteSession = deleteSession;
         vm.goBack = goBack;
         vm.hasChanges = false;
         vm.isSaving = false;
@@ -49,6 +50,22 @@
             //if it is create case - check entity state - return to speakers;
             if (vm.session.entityAspect.entityState.isDetached()) {
                 gotoSessions();
+            }
+        }
+
+        function deleteSession() {
+            // bsDialog - is a reference to bootstrap.dialog - injected as dependency
+            // boostrap.dialog service is one that we have wrote on top of a bootstrap-UI library to make it simplier to use
+            return bsDialog.deleteDialog('Session')
+                .then(confirmDelete);
+
+            function confirmDelete() {
+                datacontext.markDeleted(vm.session);
+                vm.save().then(success, failed);
+
+                function success() { gotoSessions(); }
+
+                function failed(error) { cancel(); }
             }
         }
         
@@ -99,9 +116,10 @@
             if (!canSave()) { return $q.when(null); } // Must return a promise
 
             vm.isSaving = true;
-            datacontext.save().
-                then(function (saveResult) {
+            datacontext.save()
+                .then(function (saveResult) {
                     vm.isSaving = false;
+                    datacontext.speaker.calcIsSpeaker();
                 }, function (error) {
                     vm.isSaving = false;
                 });

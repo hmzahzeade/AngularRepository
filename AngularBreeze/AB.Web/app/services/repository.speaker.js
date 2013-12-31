@@ -18,6 +18,7 @@
             this.entityName = entityName;
             this.manager = mgr;
             // Exposed data access functions
+            this.calcIsSpeaker = calcIsSpeaker;
             this.create = create;
             this.getAllLocal = getAllLocal;
             this.getById = getById;
@@ -30,6 +31,18 @@
         return Ctor;
 
         //#region Internal Methods   
+
+        function calcIsSpeaker() {
+            var self = this;
+            var persons = self.manager.getEntities(model.entityNames.person);
+            var sessions = self.manager.getEntities(model.entityNames.session);
+
+            persons.forEach(function(person) { person.isSpeaker = false; });
+
+            sessions.forEach(function(session) {
+                session.speaker.isSpeaker = (session.speakerId !== 0);
+            });
+        }
 
         function create() {
             return this.manager.createEntity(entityName);

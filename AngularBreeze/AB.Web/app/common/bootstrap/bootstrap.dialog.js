@@ -11,6 +11,7 @@
             confirmationDialog: confirmationDialog
         };
 
+        //$templateCache - it is an Angular templates storage where reusable templates can be preserved
         $templateCache.put('modalDialog.tpl.html', 
             '<div>' +
             '    <div class="modal-header">' +
